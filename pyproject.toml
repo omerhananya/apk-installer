@@ -10,7 +10,17 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest",
+    "ruff",
+    "pyinstaller",
 ]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "ARG", "PT", "RET", "RSE"]
+ignore = []
 
 [project.scripts]
 apk-installer = "apk_installer.cli:main"
