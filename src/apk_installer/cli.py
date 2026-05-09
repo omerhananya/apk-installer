@@ -1,6 +1,6 @@
 import sys
 from apk_installer.adb import check_adb_exists, get_devices
-from apk_installer.tui import MatrixApp
+from apk_installer.tui import MatrixApp, FilePickerApp
 
 def main():
     """CLI entry point for apk-installer."""
@@ -16,8 +16,11 @@ def main():
     apks = [arg for arg in sys.argv[1:] if arg.endswith(".apk")]
     
     if not apks:
-        print("No APK files provided. (TUI file picker coming soon!)")
-        return
+        # Launch file picker TUI
+        picker = FilePickerApp()
+        apks = picker.run()
+        if not apks:
+            return
 
     # Get connected devices
     devices = get_devices()

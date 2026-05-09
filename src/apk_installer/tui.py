@@ -1,8 +1,56 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, DataTable, Label
+from textual.widgets import Header, Footer, DataTable, Label, DirectoryTree, Button
+from textual.containers import Vertical, Horizontal
 from textual import on
 from apk_installer.adb import Device, install_apk
 import asyncio
+import os
+
+class FilePickerApp(App[list[str]]):
+    """A TUI for picking APK files from the current directory."""
+    
+    BINDINGS = [
+        ("q", "quit", "Quit"),
+    ]
+    
+    def compose(self) -> ComposeResult:
+        yield Header()
+        yield Label("Select APK files to install (Space to toggle, Enter to confirm)")
+        yield DataTable()
+        yield Button("Confirm Selection", variant="primary", id="confirm")
+        yield Footer()
+
+    def on_mount(self) -> None:
+        table = self.query_one(DataTable)
+        table.add_column("Install?", width=10)
+        table.add_column("File Name")
+        
+        apks = [f for f in os.listdir(".") if f.endswith(".apk")]
+        self.apk_selections = {apk: False for apk in apks}
+        
+        for apk in apks:
+            table.add_row("[ ]", apk)
+
+    @on(DataTable.CellSelected)
+    def toggle_apk(self, event: DataTable.CellSelected) -> None:
+        table = event.data_table
+        row_data = table.get_row_at(event.coordinate.row)
+        apk_name = row_data[1]
+        
+        current_state = self.apk_selections[apk_name]
+        new_state = not current_state
+        self.apk_selections[apk_name] = new_state
+        
+        table.update_cell_at((event.coordinate.row, 0), "[x]" if new_state else "[ ]")
+
+    @on(Button.Pressed, "#confirm")
+    def confirm(self) -> None:
+        selected = [apk for apk, sel in self.apk_selections.items() if sel]
+        if not selected:
+            self.notify("No APKs selected!", severity="warning")
+            return
+        self.exit(selected)
+
 
 class MatrixApp(App):
     """The core selection matrix TUI."""
