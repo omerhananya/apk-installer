@@ -1,0 +1,20 @@
+[project]
+name = "apk-installer"
+version = "0.1.0"
+description = "Parallel APK installer for multiple Android devices"
+requires-python = ">=3.10"
+dependencies = [
+    "textual>=0.50.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
+
+[project.scripts]
+apk-installer = "apk_installer.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
