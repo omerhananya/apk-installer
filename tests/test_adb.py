@@ -40,3 +40,20 @@ def test_get_devices_empty():
     with patch("subprocess.check_output", return_value=mock_output):
         devices = get_devices()
         assert devices == []
+
+def test_get_devices_missing_model():
+    mock_output = (
+        "List of devices attached\n"
+        "emulator-5554          device product:sdk_gphone64_arm64 device:emulator64_arm64 transport_id:1\n"
+    )
+    with patch("subprocess.check_output", return_value=mock_output):
+        devices = get_devices()
+        assert len(devices) == 1
+        assert devices[0].serial == "emulator-5554"
+        assert devices[0].model == "unknown"
+
+def test_get_devices_called_process_error():
+    import subprocess
+    with patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "adb")):
+        devices = get_devices()
+        assert devices == []

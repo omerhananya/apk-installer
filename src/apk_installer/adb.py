@@ -43,33 +43,32 @@ def get_devices() -> list[Device]:
     """
     try:
         output = subprocess.check_output(["adb", "devices", "-l"], text=True)
+        devices = []
+        lines = output.strip().splitlines()
+        if not lines:
+            return []
+
+        # Skip "List of devices attached"
+        for line in lines[1:]:
+            if not line.strip():
+                continue
+
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+
+            serial = parts[0]
+            status = parts[1]
+            model = "unknown"
+
+            # Search for model:<model> in the rest of the parts
+            for part in parts[2:]:
+                if part.startswith("model:"):
+                    model = part.split(":", 1)[1]
+                    break
+
+            devices.append(Device(serial=serial, status=status, model=model))
+
+        return devices
     except (subprocess.CalledProcessError, FileNotFoundError):
         return []
-
-    devices = []
-    lines = output.strip().splitlines()
-    if not lines:
-        return []
-
-    # Skip "List of devices attached"
-    for line in lines[1:]:
-        if not line.strip():
-            continue
-
-        parts = line.split()
-        if len(parts) < 2:
-            continue
-
-        serial = parts[0]
-        status = parts[1]
-        model = "unknown"
-
-        # Search for model:<model> in the rest of the parts
-        for part in parts[2:]:
-            if part.startswith("model:"):
-                model = part.split(":", 1)[1]
-                break
-
-        devices.append(Device(serial=serial, status=status, model=model))
-
-    return devices
