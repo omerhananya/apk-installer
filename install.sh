@@ -15,13 +15,9 @@ if ! command -v uv &> /dev/null; then
 fi
 
 # 2. Install the tool
-# Note: In a real scenario, this would point to the PyPI package or GitHub URL
-# For now, we'll assume we are installing from the current directory for testing
-# but we can also point it to a git repo:
-# uv tool install git+https://github.com/username/apk-installer.git
-
 echo "🛠️ Installing apk-installer tool..."
-uv tool install . --force
+# Prefer installing from the remote repo so the tool is correctly linked to source
+uv tool install git+https://github.com/omerhananya/apk-installer.git --force
 
 echo ""
 echo "✅ Done! You can now run the tool by typing: apk-installer"

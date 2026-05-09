@@ -18,11 +18,11 @@ A cross-platform CLI tool to install multiple APK files to multiple Android devi
 ### Option 1: Quick Install (Recommended)
 Install instantly via `uv`:
 ```bash
-curl -sSL https://raw.githubusercontent.com/user/repo/main/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/omerhananya/apk-installer/main/install.sh | sh
 ```
 
 ### Option 2: Standalone Binary
-Download the pre-built `apk-installer` binary for your OS from the [Releases](https://github.com/user/repo/releases) page. No Python installation is required.
+Download the pre-built `apk-installer` binary for your OS from the [Releases](https://github.com/omerhananya/apk-installer/releases) page. No Python installation is required.
 
 ### Option 3: Using uv/pip
 ```bash
