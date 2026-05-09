@@ -72,3 +72,23 @@ def get_devices() -> list[Device]:
         return devices
     except (subprocess.CalledProcessError, FileNotFoundError):
         return []
+
+
+async def install_apk(serial: str, apk_path: str) -> tuple[bool, str, str]:
+    """Install an APK to a specific device using ADB.
+
+    Args:
+        serial: The device serial number.
+        apk_path: The path to the APK file.
+
+    Returns:
+        tuple[bool, str, str]: (Success, stdout, stderr)
+    """
+    import asyncio
+    proc = await asyncio.create_subprocess_exec(
+        "adb", "-s", serial, "install", apk_path,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+    stdout, stderr = await proc.communicate()
+    return proc.returncode == 0, stdout.decode(), stderr.decode()
