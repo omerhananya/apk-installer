@@ -1,5 +1,6 @@
 from unittest.mock import patch
-from apk_installer.adb import check_adb_exists, get_adb_version
+import pytest
+from apk_installer.adb import check_adb_exists, get_adb_version, get_devices, Device
 
 def test_check_adb_exists_true():
     with patch("shutil.which", return_value="/usr/local/bin/adb"):
@@ -17,3 +18,25 @@ def test_get_adb_version_success():
 def test_get_adb_version_failure():
     with patch("subprocess.check_output", side_effect=FileNotFoundError):
         assert get_adb_version() == ""
+
+def test_get_devices_success():
+    mock_output = (
+        "List of devices attached\n"
+        "emulator-5554          device product:sdk_gphone64_arm64 model:sdk_gphone64_arm64 device:emulator64_arm64 transport_id:1\n"
+        "0123456789ABCDEF       device usb:1-1 product:redfin model:Pixel_5 device:redfin transport_id:2\n"
+    )
+    with patch("subprocess.check_output", return_value=mock_output):
+        devices = get_devices()
+        assert len(devices) == 2
+        assert devices[0].serial == "emulator-5554"
+        assert devices[0].status == "device"
+        assert devices[0].model == "sdk_gphone64_arm64"
+        assert devices[1].serial == "0123456789ABCDEF"
+        assert devices[1].status == "device"
+        assert devices[1].model == "Pixel_5"
+
+def test_get_devices_empty():
+    mock_output = "List of devices attached\n"
+    with patch("subprocess.check_output", return_value=mock_output):
+        devices = get_devices()
+        assert devices == []
