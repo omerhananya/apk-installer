@@ -1,18 +1,20 @@
-from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, DataTable, Label, DirectoryTree, Button
-from textual.containers import Vertical, Horizontal
-from textual import on
-from apk_installer.adb import Device, install_apk
 import asyncio
 import os
 
+from textual import on
+from textual.app import App, ComposeResult
+from textual.widgets import Button, DataTable, Footer, Header, Label
+
+from apk_installer.adb import Device, install_apk
+
+
 class FilePickerApp(App[list[str]]):
     """A TUI for picking APK files from the current directory."""
-    
+
     BINDINGS = [
         ("q", "quit", "Quit"),
     ]
-    
+
     def compose(self) -> ComposeResult:
         yield Header()
         yield Label("Select APK files to install (Space to toggle, Enter to confirm)")
@@ -24,10 +26,10 @@ class FilePickerApp(App[list[str]]):
         table = self.query_one(DataTable)
         table.add_column("Install?", width=10)
         table.add_column("File Name")
-        
+
         apks = [f for f in os.listdir(".") if f.endswith(".apk")]
-        self.apk_selections = {apk: False for apk in apks}
-        
+        self.apk_selections = dict.fromkeys(apks, False)
+
         for apk in apks:
             table.add_row("[ ]", apk)
 
@@ -36,11 +38,11 @@ class FilePickerApp(App[list[str]]):
         table = event.data_table
         row_data = table.get_row_at(event.coordinate.row)
         apk_name = row_data[1]
-        
+
         current_state = self.apk_selections[apk_name]
         new_state = not current_state
         self.apk_selections[apk_name] = new_state
-        
+
         table.update_cell_at((event.coordinate.row, 0), "[x]" if new_state else "[ ]")
 
     @on(Button.Pressed, "#confirm")
@@ -54,19 +56,19 @@ class FilePickerApp(App[list[str]]):
 
 class MatrixApp(App):
     """The core selection matrix TUI."""
-    
+
     BINDINGS = [
         ("i", "install", "Install Selected"),
         ("q", "quit", "Quit"),
     ]
-    
+
     CSS = """
     DataTable {
         height: 1fr;
         border: solid green;
     }
     """
-    
+
     def __init__(self, apks: list[str], devices: list[Device]):
         super().__init__()
         self.apks = apks
@@ -76,7 +78,7 @@ class MatrixApp(App):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Label(f"Select APKs to install. Press 'i' to start installation.")
+        yield Label("Select APKs to install. Press 'i' to start installation.")
         yield DataTable()
         yield Footer()
 
@@ -86,7 +88,7 @@ class MatrixApp(App):
         table.add_column("APK", width=30)
         for dev in self.devices:
             table.add_column(f"{dev.model}\n({dev.serial})")
-        
+
         for apk in self.apks:
             table.add_row(apk, *["[ ]" for _ in self.devices])
 
@@ -96,16 +98,16 @@ class MatrixApp(App):
         table = event.data_table
         row_index = event.coordinate.row
         col_index = event.coordinate.column
-        
+
         # Skip the first column (APK names)
         if col_index == 0:
             return
-            
+
         device_idx = col_index - 1
         current_state = self.selections[row_index][device_idx]
         new_state = not current_state
         self.selections[row_index][device_idx] = new_state
-        
+
         new_label = "[x]" if new_state else "[ ]"
         table.update_cell_at(event.coordinate, new_label)
 
@@ -116,22 +118,26 @@ class MatrixApp(App):
         for apk_idx, apk in enumerate(self.apks):
             for dev_idx, device in enumerate(self.devices):
                 if self.selections[apk_idx][dev_idx]:
-                    tasks.append(self.install_and_update(device, apk, apk_idx, dev_idx + 1))
-        
+                    tasks.append(
+                        self.install_and_update(device, apk, apk_idx, dev_idx + 1)
+                    )
+
         if not tasks:
             self.notify("No installations selected!", severity="warning")
             return
-            
+
         await asyncio.gather(*tasks)
         self.notify("All installations complete!")
 
-    async def install_and_update(self, device: Device, apk: str, row: int, col: int) -> None:
+    async def install_and_update(
+        self, device: Device, apk: str, row: int, col: int
+    ) -> None:
         """Install a single APK and update the table with results."""
         table = self.query_one(DataTable)
-        table.update_cell_at((row, col), "[...]") # Installing
-        
+        table.update_cell_at((row, col), "[...]")  # Installing
+
         success, stdout, stderr = await install_apk(device.serial, apk)
-        
+
         if success:
             table.update_cell_at((row, col), "[OK]")
         else:

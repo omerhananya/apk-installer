@@ -1,7 +1,7 @@
 """ADB utility functions for interacting with Android Debug Bridge."""
 
-import subprocess
 import shutil
+import subprocess
 from dataclasses import dataclass
 
 
@@ -27,7 +27,8 @@ def get_adb_version() -> str:
     """Get the version of the installed ADB.
 
     Returns:
-        str: The first line of 'adb --version' output, or an empty string if adb is not found or fails.
+        str: The first line of 'adb --version' output, or an empty string 
+             if adb is not found or fails.
     """
     try:
         return subprocess.check_output(["adb", "--version"], text=True).splitlines()[0]
@@ -85,10 +86,15 @@ async def install_apk(serial: str, apk_path: str) -> tuple[bool, str, str]:
         tuple[bool, str, str]: (Success, stdout, stderr)
     """
     import asyncio
+
     proc = await asyncio.create_subprocess_exec(
-        "adb", "-s", serial, "install", apk_path,
+        "adb",
+        "-s",
+        serial,
+        "install",
+        apk_path,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
+        stderr=asyncio.subprocess.PIPE,
     )
     stdout, stderr = await proc.communicate()
     return proc.returncode == 0, stdout.decode(), stderr.decode()
