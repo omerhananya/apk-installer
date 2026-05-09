@@ -15,21 +15,14 @@ A cross-platform CLI tool to install multiple APK files to multiple Android devi
 
 ## Installation
 
-### Option 1: Quick Install (Recommended)
-Install instantly via `uv`:
+### Quick Install
+Run the following command to install the tool via `uv`. This will handle the environment and add `apk-installer` to your PATH:
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/omerhananya/apk-installer/main/install.sh | sh
 ```
 
-### Option 2: Standalone Binary
-Download the pre-built `apk-installer` binary for your OS from the [Releases](https://github.com/omerhananya/apk-installer/releases) page. No Python installation is required.
-
-### Option 3: Using uv/pip
-```bash
-uv tool install .
-# OR
-pip install .
-```
+*Note: If this is a private repository, you will need to provide a GitHub Personal Access Token in the request.*
 
 ## Usage
 Run without arguments to pick APKs in the current directory:
