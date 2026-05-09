@@ -7,11 +7,10 @@ A cross-platform CLI tool to install multiple APK files to multiple Android devi
 - **Matrix Selection:** Toggle which phone gets which app.
 - **Parallel Install:** Installs APKs to all devices at once for maximum speed.
 - **Cross-Platform:** Works on Windows, Mac, and Linux.
-- **Zero-Dependency Binary:** Optional standalone executable (no Python required).
 
 ## Prerequisites
 - [Android Platform Tools (ADB)](https://developer.android.com/tools/releases/platform-tools) must be installed and in your PATH.
-- Python 3.10+ (only if not using the standalone binary).
+- Python 3.10+ (and [uv](https://astral.sh/uv) recommended).
 
 ## Installation
 
